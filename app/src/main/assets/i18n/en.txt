@@ -649,3 +649,22 @@ Orientación	Orientation
 Vertical: para pantallas altas estilo Tesla (reproductor arriba, botones abajo)	Vertical: for tall Tesla-style screens (player on top, buttons at the bottom)
 Horizontal	Landscape
 Vertical	Portrait
+Refrigerante	Coolant
+Aceite caja	Trans oil
+Batería	Battery
+Exterior	Outside
+Datos CAN	CAN data
+Conectado	Connected
+Sin datos	No data
+¡Temperatura del motor alta!	Engine temperature high!
+Detente y apaga el motor	Stop and turn off the engine
+Motor frío	Engine cold
+maneja suave hasta	drive gently until
+Batería baja	Battery low
+Datos del vehículo (CAN)	Vehicle data (CAN)
+Aviso de motor frío	Cold engine notice
+Pide manejar suave hasta que el refrigerante llegue a esta temperatura	Asks you to drive gently until the coolant reaches this temperature
+Aviso de temperatura alta	High temperature warning
+Aviso en rojo si el refrigerante pasa de esta temperatura	Red warning if the coolant goes above this temperature
+Exportar diagnóstico del CAN	Export CAN diagnostics
+Guarda en la memoria la carpeta StradaDiag para poder leer los datos de tu pantalla	Saves the StradaDiag folder to storage so your screen's data can be read

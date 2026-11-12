@@ -116,6 +116,9 @@ public class Main extends Activity {
     private boolean portrait;
     private float carY = 64, carH = 380, mapY = 64, mapH = 380, audY = 64, audH = 380, cw = 1024;
     static final float PW = 600;   // ancho del lienzo virtual en vertical
+    // Datos del vehículo (caja CAN): casillas en la tarjeta del vehículo (vertical) y aviso sobre el mapa
+    private TextView vRpm, vCool, vTrans, vBat, vOut, vCan, warnTv;
+    private View vCoolBar, vCoolBarBg;
     private TextView topSpeedTv, topOilTv;
     private ImageView wifiIc, btIc;
     /** Reproductor vertical (tarjeta alta, p. ej. con la barra lateral): carátula y botones más grandes. */
@@ -556,6 +559,7 @@ public class Main extends Activity {
                 else if ("fijar-inicio".equals(v)) makeDefaultHome();
                 else if (v.startsWith("sim:")) { prefs.edit().putInt("sim_screen", Integer.parseInt(v.substring(4))).apply(); rebuild(); }
                 else if ("diag-mapa".equals(v)) showMapDiag();
+                else if (v.startsWith("demo-can:")) { VehicleData.get(Main.this).demo(Float.parseFloat(v.substring(9))); updateVehicle(); }
                 else if ("demo-aceite".equals(v)) {
                     prefs.edit().putBoolean("oil_on", true).putFloat("odo_base_km", 44200).putFloat("odo_gps_m", 0)
                         .putFloat("oil_last_km", 40000).putFloat("oil_interval_km", 5000).putFloat("oil_snooze_km", 0).apply();
@@ -753,6 +757,7 @@ public class Main extends Activity {
             if (bt != null && bt.isConnected() && (++btPoll % 3 == 0 || curTitle == null)) bt.refresh();
             updatePlayIcon();
             updateStatusIcons();
+            try { updateVehicle(); } catch (Throwable ignored) { }
             if (++themeTick % 30 == 0) {
                 boolean was = LIGHT;
                 applyTheme();
@@ -887,7 +892,10 @@ public class Main extends Activity {
         audX = 16;
         audW = dw - 32;
         audY = 72;
-        audH = Math.max(210, Math.min(290, dh * 0.25f));
+        audH = Math.max(170, Math.min(290, dh * 0.25f));
+        // la tarjeta del vehículo necesita ~332 (nombre, casillas de datos y velocidad): si no cabe, el reproductor cede
+        float need = 332, mid0 = dockTop - 12 - (audY + audH + 12);
+        if (mid0 < need) audH = Math.max(170, audH - (need - mid0));
         float midY = audY + audH + 12, midH = dockTop - 12 - midY;
         carX = 16; carY = midY; carH = midH;
         mapY = midY; mapH = midH;
@@ -1148,7 +1156,17 @@ public class Main extends Activity {
 
     private void buildCarCard() {
         final FrameLayout card = card(carX, carY, 300, carH, CARD);
-        final float dy = carH - 380;   // barra de abajo compacta: la foto crece y la velocidad baja
+        // Vertical: casillas de datos del vehículo (2 filas) entre la foto y la velocidad; la foto se queda con lo que
+        // sobre y se oculta si no cabe.
+        final float gridH = 112, speedY = carH - 130;
+        float gridY = speedY - 12 - gridH, photoH = gridY - 12 - 78;
+        final boolean showPhoto = !portrait || photoH >= 60;
+        if (portrait && !showPhoto) gridY = Math.max(76, gridY);
+        vRpm = vCool = vTrans = vBat = vOut = vCan = null;
+        vCoolBar = vCoolBarBg = null;
+        if (portrait) buildVehicleGrid(card, gridY);
+        final float dy = portrait ? photoH - 160 : carH - 380;   // barra de abajo compacta: la foto crece y la velocidad baja
+        final float boxDy = carH - 380;
         carTv = tv(prefs.getString("car_name", "Mi vehículo"), 20, TEXT, true);
         place(card, carTv, 20, 16, 260, 26);
         TextView chip = tv(prefs.getString("car_tag", ""), 11, Color.WHITE, true);
@@ -1158,8 +1176,10 @@ public class Main extends Activity {
         chip.setVisibility(prefs.getString("car_tag", "").trim().length() == 0 ? View.GONE : View.VISIBLE);
         placeWrap(card, chip, 20, 46);
 
-        Bitmap photo = CarPhoto.load(this);
-        if (photo != null) {
+        Bitmap photo = showPhoto ? CarPhoto.load(this) : null;
+        if (!showPhoto) {
+            // sin espacio para la foto: no se dibuja
+        } else if (photo != null) {
             ImageView car = new ImageView(this);
             car.setImageBitmap(photo);
             car.setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -1186,7 +1206,7 @@ public class Main extends Activity {
 
         FrameLayout box = new FrameLayout(this);
         box.setBackground(round(INNER, 16));
-        place(card, box, 12, 250 + dy, 276, 118);
+        place(card, box, 12, 250 + boxDy, 276, 118);
 
         LinearLayout lbl = new LinearLayout(this);
         lbl.setGravity(Gravity.CENTER_VERTICAL);
@@ -1222,6 +1242,95 @@ public class Main extends Activity {
         if (!showCar) board.removeView(card);
         setGps(false, 0);
     }
+
+    /** Casillas: RPM, refrigerante (con barra), aceite de la caja / batería, exterior, estado del CAN. */
+    private void buildVehicleGrid(FrameLayout card, float y) {
+        float tw = (276 - 16) / 3f, th = 52;
+        String[] labels = {"RPM", "Refrigerante", "Aceite caja", "Batería", "Exterior", "Datos CAN"};
+        TextView[] vals = new TextView[6];
+        for (int i = 0; i < 6; i++) {
+            FrameLayout t = new FrameLayout(this);
+            t.setBackground(round(INNER, 12));
+            place(card, t, 12 + (tw + 8) * (i % 3), y + (th + 8) * (i / 3), tw, th);
+            TextView l = tv(labels[i], 10, MUTED, false);
+            place(t, l, 8, 7, tw - 12, 14);
+            TextView v = tv("—", 16, TEXT, true);
+            place(t, v, 8, 24, tw - 12, 22);
+            vals[i] = v;
+            if (i == 1) {
+                vCoolBarBg = new FrameLayout(this);
+                vCoolBarBg.setBackground(round(BTN, 2));
+                vCoolBar = new View(this);
+                ((FrameLayout) vCoolBarBg).addView(vCoolBar, new FrameLayout.LayoutParams(0, -1));
+                place(t, vCoolBarBg, 8, th - 7, tw - 16, 3);
+            }
+        }
+        vRpm = vals[0]; vCool = vals[1]; vTrans = vals[2]; vBat = vals[3]; vOut = vals[4]; vCan = vals[5];
+        updateVehicle();
+    }
+
+    private boolean canFresh(VehicleData vd) {
+        return vd.updatedAt > 0 && SystemClock.elapsedRealtime() - vd.updatedAt < 15000;
+    }
+
+    /** Cada 2 s: casillas, velocidad del CAN (si hay) y avisos de temperatura y batería. */
+    private void updateVehicle() {
+        final VehicleData vd = VehicleData.get(this);
+        vd.poll();
+        boolean fresh = canFresh(vd);
+        if (vRpm != null) {
+            vRpm.setText(vd.rpm != null ? String.valueOf(Math.round(vd.rpm)) : "—");
+            vCool.setText(vd.coolant != null ? Math.round(vd.coolant) + "°C" : "—");
+            vTrans.setText(vd.transOil != null ? Math.round(vd.transOil) + "°C" : "—");
+            vBat.setText(vd.battery != null ? String.format(Locale.US, "%.1f V", vd.battery) : "—");
+            vOut.setText(vd.outside != null ? Math.round(vd.outside) + "°C" : "—");
+            vCan.setText(I18n.t(fresh ? "Conectado" : "Sin datos"));
+            vCan.setTextColor(fresh ? 0xFF3DDC84 : MUTED);
+            if (vd.coolant != null && vCoolBarBg != null) {
+                final float c = vd.coolant;
+                final int col = c >= coolHot() ? 0xFFFF4D4D : c < coolWarm() ? 0xFF4DA3FF : 0xFF3DDC84;
+                vCoolBarBg.post(new Runnable() { public void run() {
+                    if (vCoolBar == null) return;
+                    float f = Math.max(0f, Math.min(1f, (c - 40f) / 80f));   // 40 → 120 °C
+                    ViewGroup.LayoutParams lp = vCoolBar.getLayoutParams();
+                    lp.width = (int) (vCoolBarBg.getWidth() * f);
+                    vCoolBar.setLayoutParams(lp);
+                    vCoolBar.setBackground(round(col, 2));
+                }});
+            }
+        }
+        // velocidad real del CAN en vez de la del GPS
+        if (fresh && vd.speed != null && speedTv != null) {
+            float v = useMph() ? vd.speed * 0.621371f : vd.speed;
+            speedTv.setText(String.valueOf(Math.round(v)));
+            if (topSpeedTv != null) topSpeedTv.setText(Math.round(v) + " " + (useMph() ? "mph" : "km/h"));
+            gpsTv.setText("CAN");
+            gpsDot.setBackground(round(0xFF3DDC84, 4));
+        }
+        if (warnTv != null) {
+            String msg = null;
+            int bg = 0;
+            if (fresh && vd.coolant != null && vd.coolant >= coolHot()) {
+                msg = I18n.t("¡Temperatura del motor alta!") + " " + Math.round(vd.coolant) + "°C · " + I18n.t("Detente y apaga el motor");
+                bg = 0xF0D32F2F;
+            } else if (fresh && vd.coolant != null && vd.coolant < coolWarm()) {
+                msg = I18n.t("Motor frío") + " (" + Math.round(vd.coolant) + "°C) · " + I18n.t("maneja suave hasta") + " " + coolWarm() + "°C";
+                bg = 0xF01E63C6;
+            } else if (fresh && vd.battery != null && vd.battery < 11.8f) {
+                msg = I18n.t("Batería baja") + ": " + String.format(Locale.US, "%.1f V", vd.battery);
+                bg = 0xF0E09A00;
+            }
+            if (msg == null) warnTv.setVisibility(View.GONE);
+            else {
+                warnTv.setText(msg);
+                warnTv.setBackground(round(bg, 12));
+                warnTv.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private int coolWarm() { return prefs.getInt("cool_warm", 50); }
+    private int coolHot() { return prefs.getInt("cool_hot", 105); }
 
     // ───────────────────────── recordatorio de cambio de aceite ─────────────────────────
     // StradaOS no puede leer el odómetro del tablero, así que lo estima: el usuario escribe el kilometraje una vez
@@ -1576,6 +1685,17 @@ public class Main extends Activity {
         tag.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { fixGps(); }
         });
+        // aviso del vehículo (motor caliente / frío, batería baja): encima del mapa, debajo de la etiqueta
+        warnTv = tv("", 13, Color.WHITE, true);
+        warnTv.setSingleLine(false);
+        warnTv.setMaxLines(3);
+        warnTv.setPadding((int) (12 * s), (int) (8 * s), (int) (12 * s), (int) (8 * s));
+        warnTv.setVisibility(View.GONE);
+        FrameLayout.LayoutParams wlp = new FrameLayout.LayoutParams((int) ((mapW - 24) * s), -2);
+        wlp.gravity = Gravity.TOP | Gravity.LEFT;
+        wlp.leftMargin = (int) (12 * s);
+        wlp.topMargin = (int) (58 * s);
+        card.addView(warnTv, wlp);
 
         // mapa angosto (vertical): Android Auto y CarPlay uno encima del otro
         final float panelW = mapW - 24;
@@ -1819,18 +1939,20 @@ public class Main extends Activity {
             float A = audH - 52;
             place(card, playerArt, 18, 38, A, A);
             float x1 = 18 + A + 22, wR = audW - x1 - 18;
-            trackTv = tv("Nada sonando", 20, TEXT, true);
+            boolean low = audH < 220;   // pantalla baja (barra del fabricante abajo): botones más chicos y sin tiempo
+            trackTv = tv("Nada sonando", low ? 18 : 20, TEXT, true);
             trackTv.setSingleLine(true);
             trackTv.setEllipsize(android.text.TextUtils.TruncateAt.END);
-            place(card, trackTv, x1, 44, wR, 28);
+            place(card, trackTv, x1, low ? 38 : 44, wR, 28);
             artistTv = tv("Radio, Bluetooth o USB", 14, MUTED, false);
             artistTv.setSingleLine(true);
             artistTv.setEllipsize(android.text.TextUtils.TruncateAt.END);
-            place(card, artistTv, x1, 78, wR, 20);
+            place(card, artistTv, x1, low ? 68 : 78, wR, 20);
             timePosTv = tv("", 13, MUTED, false);
             place(card, timePosTv, x1, 102, wR, 18);
-            float bs = 60, ps = 76, gap = 14;
-            float yb = audH - 18 - ps;
+            if (low) timePosTv.setVisibility(View.GONE);
+            float bs = low ? 48 : 60, ps = low ? 60 : 76, gap = 14;
+            float yb = audH - (low ? 14 : 18) - ps;
             prev = circleIcon("skip_previous", bs, bs / 2, BTN);
             play = circleIcon("play_arrow", ps, ps * 0.47f, RED);
             next = circleIcon("skip_next", bs, bs / 2, BTN);
@@ -2390,6 +2512,8 @@ public class Main extends Activity {
     private void setGps(boolean ok, float kmh) {
         if (speedTv == null) return;
         if (!ok) lastFix = 0;
+        VehicleData vd = VehicleData.get(this);
+        if (canFresh(vd) && vd.speed != null) { updateMapTag(); return; }   // manda la velocidad del CAN
         float v = useMph() ? kmh * 0.621371f : kmh;
         speedTv.setText(ok ? String.valueOf(Math.round(kmh < 2 ? 0 : v)) : "--");
         if (topSpeedTv != null) topSpeedTv.setText((ok ? String.valueOf(Math.round(kmh < 2 ? 0 : v)) : "--") + " " + (useMph() ? "mph" : "km/h"));
@@ -3649,6 +3773,18 @@ public class Main extends Activity {
             Math.max(0, java.util.Arrays.asList(orients).indexOf(prefs.getString("orient_mode", "auto"))), new IntCb() { public void on(int i) {
                 prefs.edit().putString("orient_mode", orients[i]).apply(); rebuild(); showSettings(2);
             }});
+        LinearLayout vs = section(body, "Datos del vehículo (CAN)");
+        row(vs, "Aviso de motor frío", "Pide manejar suave hasta que el refrigerante llegue a esta temperatura", coolWarm() + " °C", new Runnable() { public void run() {
+            askNumber(I18n.t("Aviso de motor frío") + " (°C)", coolWarm(), new NumCb() { public void on(float v) {
+                prefs.edit().putInt("cool_warm", Math.round(v)).apply(); showSettings(2);
+            }});
+        }});
+        row(vs, "Aviso de temperatura alta", "Aviso en rojo si el refrigerante pasa de esta temperatura", coolHot() + " °C", new Runnable() { public void run() {
+            askNumber(I18n.t("Aviso de temperatura alta") + " (°C)", coolHot(), new NumCb() { public void on(float v) {
+                prefs.edit().putInt("cool_hot", Math.round(v)).apply(); showSettings(2);
+            }});
+        }});
+        row(vs, "Exportar diagnóstico del CAN", "Guarda en la memoria la carpeta StradaDiag para poder leer los datos de tu pantalla", null, new Runnable() { public void run() { runDiag(); } });
         segmented(lay, "Reproductor de música", "Ponlo del lado del conductor para tenerlo a la mano", new String[]{"Derecha", "Izquierda"},
             playerLeft ? 1 : 0, new IntCb() { public void on(int i) {
                 prefs.edit().putString("player_side", i == 1 ? "left" : "right").apply(); rebuild();

@@ -89,7 +89,36 @@ public class Diag {
         } finally {
             if (bw != null) bw.close();
         }
+        // Propiedades del sistema: muchas pantallas publican datos del CAN (voltaje, temperatura, versión de la caja)
+        dumpCmd(new File(out, "getprop.txt"), new String[]{"getprop"});
+        // Lo que ve ahora el lector de datos del vehículo (fuentes probadas y valores)
+        PrintWriter vw = null;
+        try {
+            vw = new PrintWriter(new FileOutputStream(new File(out, "vehiculo.txt")));
+            vw.println(VehicleData.get(c).report());
+        } catch (Throwable e) {
+            if (vw != null) vw.println("ERROR: " + e);
+        } finally {
+            if (vw != null) vw.close();
+        }
         return out.getAbsolutePath() + "  (" + copied + " apps, " + (bytes / 1024 / 1024) + " MB)";
+    }
+
+    private static void dumpCmd(File f, String[] cmd) {
+        PrintWriter w = null;
+        java.io.BufferedReader r = null;
+        try {
+            w = new PrintWriter(new FileOutputStream(f));
+            Process p = Runtime.getRuntime().exec(cmd);
+            r = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream()));
+            String line;
+            while ((line = r.readLine()) != null) w.println(line);
+        } catch (Throwable e) {
+            if (w != null) w.println("ERROR: " + e);
+        } finally {
+            try { if (r != null) r.close(); } catch (Throwable ignored) { }
+            if (w != null) w.close();
+        }
     }
 
     private static long copy(File a, File b) {

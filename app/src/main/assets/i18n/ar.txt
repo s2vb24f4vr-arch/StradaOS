@@ -649,3 +649,22 @@ Orientación	الاتجاه
 Vertical: para pantallas altas estilo Tesla (reproductor arriba, botones abajo)	رأسي: للشاشات الطولية زي تسلا (المشغّل فوق والأزرار تحت)
 Horizontal	أفقي
 Vertical	رأسي
+Refrigerante	حرارة المية
+Aceite caja	زيت الفتيس
+Batería	البطارية
+Exterior	الجو برا
+Datos CAN	بيانات CAN
+Conectado	متصل
+Sin datos	مفيش بيانات
+¡Temperatura del motor alta!	حرارة الموتور عالية!
+Detente y apaga el motor	اقف واطفي الموتور
+Motor frío	الموتور بارد
+maneja suave hasta	سوق بهدوء لحد
+Batería baja	البطارية ضعيفة
+Datos del vehículo (CAN)	بيانات العربية (CAN)
+Aviso de motor frío	تنبيه الموتور البارد
+Pide manejar suave hasta que el refrigerante llegue a esta temperatura	يطلب منك تسوق بهدوء لحد ما حرارة المية توصل للدرجة دي
+Aviso de temperatura alta	تحذير الحرارة العالية
+Aviso en rojo si el refrigerante pasa de esta temperatura	تحذير أحمر لو حرارة المية عدّت الدرجة دي
+Exportar diagnóstico del CAN	تصدير تشخيص الـ CAN
+Guarda en la memoria la carpeta StradaDiag para poder leer los datos de tu pantalla	بيحفظ فولدر StradaDiag في الذاكرة عشان نعرف نقرا بيانات شاشتك

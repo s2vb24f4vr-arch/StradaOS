@@ -24,6 +24,9 @@ for L in es ar en; do
   go tema:claro 6; go pista-demo 3; sleep 6; shot $L-claro
   go tema:oscuro 4; go diseno:sinauto 6; go pista-demo 3; sleep 6; shot $L-sin-vehiculo
   go diseno:base 6
+  go demo-can:88 4; sleep 3; shot $L-can-normal
+  go demo-can:35 4; sleep 3; shot $L-can-frio
+  go demo-can:112 4; sleep 3; shot $L-can-caliente
 done
 go ajustes:2 6; shot ajustes-diseno
 adb shell input keyevent 4; sleep 2
