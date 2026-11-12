@@ -1,0 +1,80 @@
+11-12 18:03:00.553   283   283 D AndroidRuntime: >>>>>> START com.android.internal.os.ZygoteInit uid 0 <<<<<<
+11-12 18:03:00.583   283   283 I AndroidRuntime: Using default boot image
+11-12 18:03:00.583   283   283 I AndroidRuntime: Leaving lock profiling enabled
+11-12 18:03:05.384   825   825 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+11-12 18:03:05.385   814   814 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+11-12 18:03:08.749  1516  1516 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-12 18:03:08.840  1516  1516 I AndroidRuntime: Using default boot image
+11-12 18:03:08.840  1516  1516 I AndroidRuntime: Leaving lock profiling enabled
+11-12 18:03:09.577  1516  1516 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-12 18:03:09.714  1516  1516 D AndroidRuntime: Shutting down VM
+11-12 18:03:20.238  2253  2253 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-12 18:03:20.239  2253  2253 I AndroidRuntime: Using default boot image
+11-12 18:03:20.239  2253  2253 I AndroidRuntime: Leaving lock profiling enabled
+11-12 18:03:20.273  2253  2253 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-12 18:03:20.277  2253  2253 D AndroidRuntime: Shutting down VM
+11-12 18:03:25.755  1640  1666 I MediaProvider: Invalidating LocalCallingIdentity cache for package com.stradaos.launcher.debug. Reason: op android:read_external_storage
+11-12 18:03:25.756   506   564 V BackupManagerService: [UserID:0] restoreAtInstall pkg=com.stradaos.launcher.debug token=1 restoreSet=0
+11-12 18:03:25.757  1640  1666 I MediaProvider: Invalidating LocalCallingIdentity cache for package com.stradaos.launcher.debug. Reason: op android:read_external_storage
+11-12 18:03:25.768   506   547 W BroadcastQueue: Background execution not allowed: receiving Intent { act=android.intent.action.PACKAGE_ADDED dat=package:com.stradaos.launcher.debug flg=0x4000010 (has extras) } to com.android.packageinstaller/.PackageInstalledReceiver
+11-12 18:03:25.768   506   547 W BroadcastQueue: Background execution not allowed: receiving Intent { act=android.intent.action.PACKAGE_ADDED dat=package:com.stradaos.launcher.debug flg=0x4000010 (has extras) } to com.android.gallery3d/.app.PackagesMonitor
+11-12 18:03:25.773  1640  1640 I MediaProvider: Invalidating LocalCallingIdentity cache for package com.stradaos.launcher.debug. Reason: package android.intent.action.PACKAGE_ADDED
+11-12 18:03:25.774   696   696 D AvrcpMediaPlayerList: Name of package changed: com.stradaos.launcher.debug
+11-12 18:03:25.813   506   574 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:03:25.846   506   548 I ActivityManager: Start proc 2302:com.stradaos.launcher.debug/u0a130 for pre-top-activity {com.stradaos.launcher.debug/com.stradaos.launcher.Main}
+11-12 18:03:26.191   506   546 D ArtManagerInternalImpl: /data/misc/iorapd/com.stradaos.launcher.debug/46/com.stradaos.launcher.Main/compiled_traces/compiled_trace.pb doesn't exist
+11-12 18:03:26.191   506   546 I ActivityTaskManager: Displayed com.stradaos.launcher.debug/com.stradaos.launcher.Main: +368ms
+11-12 18:03:26.262  2302  2302 I TetheringManager: registerTetheringEventCallback:com.stradaos.launcher.debug
+11-12 18:03:40.850   506  2018 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:03:46.875   506  1008 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:03:50.912   506  2384 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:03:58.932   506   885 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:04:04.968   506   885 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:04:10.933   506  2434 I PackageDexOptimizer: Running dexopt (dexoptNeeded=1) on: /data/app/~~gBtxotyaobDGC5I-axTIRQ==/com.stradaos.launcher.debug-2j_s7JYXVqkRE5ph0IJJJg==/base.apk pkg=com.stradaos.launcher.debug isa=x86_64 dexoptFlags=boot_complete,debuggable,public,enable_hidden_api_checks targetFilter=verify oatDir=/data/app/~~gBtxotyaobDGC5I-axTIRQ==/com.stradaos.launcher.debug-2j_s7JYXVqkRE5ph0IJJJg==/oat classLoaderContext=PCL[]{PCL[/system/framework/android.test.base.jar]}
+11-12 18:04:10.933   416   416 V installd: DexInv: --- BEGIN '/data/app/~~gBtxotyaobDGC5I-axTIRQ==/com.stradaos.launcher.debug-2j_s7JYXVqkRE5ph0IJJJg==/base.apk' ---
+11-12 18:04:10.949  2439  2439 I dex2oat32: /apex/com.android.art/bin/dex2oat32 --input-vdex-fd=-1 --output-vdex-fd=9 --updatable-bcp-packages-file=/system/etc/updatable-bcp-packages.txt --resolve-startup-const-strings=true --max-image-block-size=524288 --compiler-filter=verify --debuggable --classpath-dir=/data/app/~~gBtxotyaobDGC5I-axTIRQ==/com.stradaos.launcher.debug-2j_s7JYXVqkRE5ph0IJJJg== --class-loader-context=PCL[]{PCL[/system/framework/android.test.base.jar]} --generate-mini-debug-info --compact-dex-level=none --compilation-reason=boot
+11-12 18:04:10.998   506  1008 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:04:11.006   416   416 V installd: DexInv: --- END '/data/app/~~gBtxotyaobDGC5I-axTIRQ==/com.stradaos.launcher.debug-2j_s7JYXVqkRE5ph0IJJJg==/base.apk' (success) ---
+11-12 18:04:11.056   506  2434 I BackgroundDexOptService: Pinning optimized code {android, com.stradaos.launcher.debug}
+11-12 18:04:11.056   506  2434 D IorapForwardingService: onPackagesUpdated: com.stradaos.launcher.debug
+11-12 18:04:29.301   506  1036 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:04:35.326   506  2384 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:04:44.575   506  1036 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:04:48.593   506  1036 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:04:54.614   506  1008 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:05:03.932   506  1036 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:05:09.975   506  2384 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:05:17.228   506   885 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:05:24.496   506  1036 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:05:31.766   506  2384 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:05:39.804   506  2384 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:05:45.825   506  2384 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:05:51.846   506   780 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:06:10.089   506  2384 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:06:16.115   506  2384 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:06:25.369   506   885 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:06:29.406   506   780 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:06:35.427   506   885 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:06:44.797   506   885 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:06:50.827   506   885 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:06:58.050   506  1008 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:07:05.277   506   536 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:07:12.486   506  1008 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:07:20.512   506  1008 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:07:26.537   506  1008 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:07:32.558   506  1601 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:07:50.762   506  1601 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:07:56.781   506  2384 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:08:05.997   506   536 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:08:10.028   506  1601 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:08:16.049   506   536 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:08:25.360   506  1669 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:08:31.380   506  1601 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:08:38.614   506  1008 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:08:45.879   506  1008 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:08:53.131   506  1669 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.stradaos.launcher.debug/com.stradaos.launcher.Main (has extras)} from uid 2000
+11-12 18:08:59.392  3076  3076 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-12 18:08:59.393  3076  3076 I AndroidRuntime: Using default boot image
+11-12 18:08:59.393  3076  3076 I AndroidRuntime: Leaving lock profiling enabled
+11-12 18:08:59.443  3076  3076 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-12 18:08:59.450  3076  3076 D AndroidRuntime: Shutting down VM
