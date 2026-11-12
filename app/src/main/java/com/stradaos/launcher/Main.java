@@ -1284,7 +1284,7 @@ public class Main extends Activity {
             vTrans.setText(vd.transOil != null ? Math.round(vd.transOil) + "°C" : "—");
             vBat.setText(vd.battery != null ? String.format(Locale.US, "%.1f V", vd.battery) : "—");
             vOut.setText(vd.outside != null ? Math.round(vd.outside) + "°C" : "—");
-            vCan.setText(I18n.t(fresh ? "Conectado" : "Sin datos"));
+            vCan.setText(fresh ? "✓" : "—");   // corto y sin idioma: «Conectado» no cabía
             vCan.setTextColor(fresh ? 0xFF3DDC84 : MUTED);
             if (vd.coolant != null && vCoolBarBg != null) {
                 final float c = vd.coolant;
