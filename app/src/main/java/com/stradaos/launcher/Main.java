@@ -928,13 +928,15 @@ public class Main extends Activity {
     private void buildTop() {
         LinearLayout row = new LinearLayout(this);
         // en vertical no cabe todo en una línea: la fecha va debajo de la hora
-        row.setOrientation(portrait ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
+        // (sin tarjeta del vehículo la velocidad y el aceite van junto a la hora y la fecha se oculta)
+        row.setOrientation(portrait && showCar ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
         row.setBaselineAligned(true);
         timeTv = tv("", 30, TEXT, true);
         dateTv = tv("", 14, MUTED, false);
         dateTv.setPadding(portrait ? 0 : (int) (12 * s), portrait ? (int) (4 * s) : 0, 0, 0);
         row.addView(timeTv);
         row.addView(dateTv);
+        if (portrait && !showCar) dateTv.setVisibility(View.GONE);
         topSpeedTv = null;
         if (!showCar) {
             // sin tarjeta del vehículo, la velocidad se muestra aquí
