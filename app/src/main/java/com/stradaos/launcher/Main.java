@@ -111,6 +111,11 @@ public class Main extends Activity {
     private float ox, cardH = 380, dockTop = 456, boardH = 600;
     /** Columnas: x de la tarjeta del vehículo, del mapa y del reproductor, y anchos del mapa y del reproductor. */
     private float carX = 16, mapX = 328, mapW = 420, audX = 760, audW = 248;
+    /** Pantalla vertical (estilo Tesla, p. ej. 9,7" 768x1024): reproductor arriba a lo ancho, vehículo + mapa en el
+     *  medio y la barra de botones abajo. Cada tarjeta tiene su propio y/alto (en horizontal todas usan 64/cardH). */
+    private boolean portrait;
+    private float carY = 64, carH = 380, mapY = 64, mapH = 380, audY = 64, audH = 380, cw = 1024;
+    static final float PW = 600;   // ancho del lienzo virtual en vertical
     private TextView topSpeedTv, topOilTv;
     private ImageView wifiIc, btIc;
     /** Reproductor vertical (tarjeta alta, p. ej. con la barra lateral): carátula y botones más grandes. */
@@ -118,8 +123,8 @@ public class Main extends Activity {
     /** Escala de 1024x600 para Ajustes, el cajón y sus ventanas: con la barra lateral el inicio se agranda, pero
      *  esas pantallas deben conservar su tamaño (en un S23 con barra lateral Ajustes quedaba cortado arriba). */
     private float uiS = 1f;
-    static final int[] SIM_W = {0, 1024, 1280, 1920, 2000, 1280};
-    static final int[] SIM_H = {0, 600, 720, 720, 1200, 480};
+    static final int[] SIM_W = {0, 1024, 1280, 1920, 2000, 1280, 768};
+    static final int[] SIM_H = {0, 600, 720, 720, 1200, 480, 1024};
 
     private TextView weatherTv, weatherCityTv;
     private ImageView weatherIc;
@@ -799,6 +804,13 @@ public class Main extends Activity {
         String rs = prefs.getString("rail_side", "auto");
         railLeft = "left".equals(rs) || (!"right".equals(rs) && playerLeft);
         dockLabels = prefs.getBoolean("dock_labels", true);
+        // Vertical: automático si la pantalla es más alta que ancha (se puede forzar en Ajustes → Apariencia)
+        String om = prefs.getString("orient_mode", "auto");
+        portrait = "portrait".equals(om) || ("auto".equals(om) && H > W * 1.05f);
+        if (portrait) {
+            buildPortraitBoard(W, H, sim);
+            return;
+        }
         // Lienzo virtual: 1024x600. Con la barra lateral los botones salen de abajo y el lienzo queda más bajo
         // (1128x460): en pantallas bajas y anchas como 1280x480 todo se ve ~30 % más grande.
         float dw = 1024 + (sideDock ? RAIL + 8 : 0), dh = sideDock ? 460 : 600;
@@ -816,6 +828,9 @@ public class Main extends Activity {
         dockTop = sideDock ? dh : compactDock ? 512 : 456;
         cardH = sideDock ? dh - 80 : dockTop - 76;
         layoutColumns();
+        cw = 1024 + ex;
+        carY = mapY = audY = 64;
+        carH = mapH = audH = cardH;
         getWindow().setBackgroundDrawable(new ColorDrawable(sim > 0 ? Color.BLACK : BG));
         board = new FrameLayout(this);
         FrameLayout.LayoutParams blp = new FrameLayout.LayoutParams((int) ((dw + ex) * s), (int) (dh * s));
@@ -832,6 +847,10 @@ public class Main extends Activity {
             root.addView(dockBg, 0, dlp);
         }
 
+        buildCards();
+    }
+
+    private void buildCards() {
         buildTop();
         buildCarCard();
         buildAaCard();
@@ -845,6 +864,48 @@ public class Main extends Activity {
         updateStatusIcons();
         showWeather();
         if (settingsCat >= 0) showSettings(settingsCat);
+    }
+
+    /**
+     * Inicio en vertical. Lienzo de 600 de ancho y tan alto como la pantalla:
+     * arriba la hora; el reproductor a todo el ancho; en el medio la tarjeta del vehículo (300) y el mapa (resto);
+     * abajo los 7 botones en una fila.
+     */
+    private void buildPortraitBoard(int W, int H, int sim) {
+        sideDock = false;
+        compactDock = false;
+        ox = 0;
+        ex = 0;
+        float dw = PW;
+        s = W / dw;
+        float dh = H / s;
+        uiS = Math.min(W / 1024f, H / 600f);
+        boardH = dh;
+        cw = dw;
+        float dockH = dockLabels ? 112 : 96;
+        dockTop = dh - dockH;
+        audX = 16;
+        audW = dw - 32;
+        audY = 72;
+        audH = Math.max(210, Math.min(290, dh * 0.25f));
+        float midY = audY + audH + 12, midH = dockTop - 12 - midY;
+        carX = 16; carY = midY; carH = midH;
+        mapY = midY; mapH = midH;
+        if (showCar) { mapX = carX + 300 + 12; mapW = dw - 16 - mapX; }
+        else { mapX = 16; mapW = dw - 32; }
+        cardH = midH;
+        getWindow().setBackgroundDrawable(new ColorDrawable(sim > 0 ? Color.BLACK : BG));
+        board = new FrameLayout(this);
+        FrameLayout.LayoutParams blp = new FrameLayout.LayoutParams((int) (dw * s), (int) (dh * s));
+        blp.gravity = Gravity.CENTER;
+        root.addView(board, blp);
+        View dockBg = new View(this);
+        dockBg.setBackgroundColor(DOCK);
+        FrameLayout.LayoutParams dlp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                (int) (H - ((H - dh * s) / 2 + dockTop * s)) + 1);
+        dlp.gravity = Gravity.BOTTOM;
+        root.addView(dockBg, 0, dlp);
+        buildCards();
     }
 
     /**
@@ -866,11 +927,12 @@ public class Main extends Activity {
 
     private void buildTop() {
         LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
+        // en vertical no cabe todo en una línea: la fecha va debajo de la hora
+        row.setOrientation(portrait ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
         row.setBaselineAligned(true);
         timeTv = tv("", 30, TEXT, true);
         dateTv = tv("", 14, MUTED, false);
-        dateTv.setPadding((int) (12 * s), 0, 0, 0);
+        dateTv.setPadding(portrait ? 0 : (int) (12 * s), portrait ? (int) (4 * s) : 0, 0, 0);
         row.addView(timeTv);
         row.addView(dateTv);
         topSpeedTv = null;
@@ -936,10 +998,11 @@ public class Main extends Activity {
         greetTv.setPadding((int) (14 * s), 0, 0, 0);
         right.addView(greetTv);
         // sin la tarjeta del vehículo, la velocidad y el aceite ocupan la barra de arriba: el saludo se oculta
-        if (!showCar) greetTv.setVisibility(View.GONE);
-        place(board, right, ox + 400 + ex, 14, 552, 32);
+        if (!showCar || portrait) greetTv.setVisibility(View.GONE);
+        float rightW = portrait ? 300 : 552;
+        place(board, right, ox + cw - 72 - rightW, 14, rightW, 32);
         View gear = circleIcon("settings", 40, 22, CIRCLE);
-        place(board, gear, ox + 964 + ex, 12, 40, 40);
+        place(board, gear, ox + cw - 60, 12, 40, 40);
         gear.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { openSettings(); }
         });
@@ -1082,8 +1145,8 @@ public class Main extends Activity {
     }
 
     private void buildCarCard() {
-        final FrameLayout card = card(carX, 64, 300, cardH, CARD);
-        final float dy = cardH - 380;   // barra de abajo compacta: la foto crece y la velocidad baja
+        final FrameLayout card = card(carX, carY, 300, carH, CARD);
+        final float dy = carH - 380;   // barra de abajo compacta: la foto crece y la velocidad baja
         carTv = tv(prefs.getString("car_name", "Mi vehículo"), 20, TEXT, true);
         place(card, carTv, 20, 16, 260, 26);
         TextView chip = tv(prefs.getString("car_tag", ""), 11, Color.WHITE, true);
@@ -1477,7 +1540,7 @@ public class Main extends Activity {
 
     private void buildAaCard() {
         FrameLayout card = new FrameLayout(this);
-        place(board, card, mapX, 64, mapW, cardH);
+        place(board, card, mapX, mapY, mapW, mapH);
         // fondo decorativo mientras no hay GPS; encima, el mapa en vivo
         card.addView(new MapView(this, s, 20 * s), new FrameLayout.LayoutParams(-1, -1));
         if (!prefs.getBoolean("map_live", true)) { liveMap = null; seedLastLocation(); buildAaCardRest(card); return; }
@@ -1512,10 +1575,13 @@ public class Main extends Activity {
             public void onClick(View v) { fixGps(); }
         });
 
-        final float panelY = cardH - 96, panelW = mapW - 24;
+        // mapa angosto (vertical): Android Auto y CarPlay uno encima del otro
+        final float panelW = mapW - 24;
+        final boolean stack = panelW < 300;
+        final float panelH = stack ? 148 : 84, panelY = mapH - 12 - panelH;
         final FrameLayout panel = new FrameLayout(this);
         panel.setBackground(round((CARD & 0x00FFFFFF) | 0xEB000000, 16));
-        place(card, panel, 12, panelY, panelW, 84);
+        place(card, panel, 12, panelY, panelW, panelH);
 
         final View navBtn = circleIcon("map", 52, 26, (CARD & 0x00FFFFFF) | 0xEB000000);
         place(card, navBtn, mapW - 64, panelY - 64, 52, 52);
@@ -1526,13 +1592,14 @@ public class Main extends Activity {
             public boolean onLongClick(View v) { pickFor("nav_app", "Navegación"); return true; }
         });
 
-        float btnW = (panelW - 28) / 2;
+        float btnW = stack ? panelW - 20 : (panelW - 28) / 2;
         View aa = projButton("navigation", "Android Auto", RED, true);
         aaBtnTv = (TextView) aa.getTag();
         place(panel, aa, 10, 10, btnW, 64);
         View cp = projButton("phone_iphone", "CarPlay", BTN, false);
         cpSubTv = (TextView) cp.getTag();
-        place(panel, cp, 18 + btnW, 10, btnW, 64);
+        if (stack) place(panel, cp, 10, 74, btnW, 64);
+        else place(panel, cp, 18 + btnW, 10, btnW, 64);
         aaSubTv = aaBtnTv;
 
         // Android Auto / CarPlay plegables: una flechita los esconde para ver todo el mapa (Druids07, idea de Andrés).
@@ -1544,7 +1611,7 @@ public class Main extends Activity {
         clp.gravity = Gravity.CENTER;
         handle.addView(chev, clp);
         place(card, handle, (mapW - 64) / 2, panelY - 28, 64, 24);
-        final float shift = 96 * s;
+        final float shift = (panelH + 12) * s;
         final View[] moving = {panel, navBtn, handle};
         final boolean open0 = prefs.getBoolean("aa_panel_open", true);
         for (View v : moving) v.setTranslationY(open0 ? 0 : shift);
@@ -1732,9 +1799,9 @@ public class Main extends Activity {
     }
 
     private void buildAudioCard() {
-        final FrameLayout card = card(audX, 64, audW, cardH, CARD);
+        final FrameLayout card = card(audX, audY, audW, audH, CARD);
         // contenido centrado: la tarjeta es más ancha sin la del vehículo y más alta con la barra compacta
-        final float dx = (audW - 248) / 2, dy = (cardH - 380) / 2;
+        final float dx = (audW - 248) / 2, dy = (audH - 380) / 2;
         placeWrap(card, tv("AUDIO", 11, MUTED, true), 18, 14);
         sourceTv = tv("", 11, RED, true);
         sourceTv.setGravity(Gravity.RIGHT);
@@ -1743,9 +1810,33 @@ public class Main extends Activity {
         place(card, sourceTv, 70, 14, audW - 88, 18);   // ancho de sobra: en Android 11 «BLUETOOTH» salía cortado
         playerArt = new PlayerArt(this, s, asset("ic/music_note.png"));
         // Tarjeta alta (barra lateral): diseño vertical que llena el alto en vez de dejar espacio vacío (Andrés, Picanto)
-        tallPlayer = cardH - 380 >= 60;
+        tallPlayer = !portrait && audH - 380 >= 60;
         final View prev, play, next;
-        if (tallPlayer) {
+        if (portrait) {
+            // Vertical: tarjeta ancha y baja. Carátula a la izquierda; canción, artista, tiempo y botones a la derecha.
+            float A = audH - 52;
+            place(card, playerArt, 18, 38, A, A);
+            float x1 = 18 + A + 22, wR = audW - x1 - 18;
+            trackTv = tv("Nada sonando", 20, TEXT, true);
+            trackTv.setSingleLine(true);
+            trackTv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            place(card, trackTv, x1, 44, wR, 28);
+            artistTv = tv("Radio, Bluetooth o USB", 14, MUTED, false);
+            artistTv.setSingleLine(true);
+            artistTv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            place(card, artistTv, x1, 78, wR, 20);
+            timePosTv = tv("", 13, MUTED, false);
+            place(card, timePosTv, x1, 102, wR, 18);
+            float bs = 60, ps = 76, gap = 14;
+            float yb = audH - 18 - ps;
+            prev = circleIcon("skip_previous", bs, bs / 2, BTN);
+            play = circleIcon("play_arrow", ps, ps * 0.47f, RED);
+            next = circleIcon("skip_next", bs, bs / 2, BTN);
+            float x0 = x1 + (wR - (bs * 2 + ps + gap * 2)) / 2;
+            place(card, prev, x0, yb + (ps - bs) / 2, bs, bs);
+            place(card, play, x0 + bs + gap, yb, ps, ps);
+            place(card, next, x0 + bs + gap + ps + gap, yb + (ps - bs) / 2, bs, bs);
+        } else if (tallPlayer) {
             boolean big = audW >= 290;
             float bs = big ? 66 : 60, ps = big ? 86 : 76, gap = big ? 12 : 10;
             float yb = cardH - 22 - ps;                 // botones abajo
@@ -1900,8 +1991,9 @@ public class Main extends Activity {
 
     private void buildDock() {
         // tamaños según la barra: normal (como siempre), compacta (menos alta) o lateral (botones al costado)
-        final float cs = sideDock ? (dockLabels ? 40 : 48) : compactDock ? 50 : 64;          // círculo
-        final float lblSize = sideDock ? 10 : compactDock ? 12 : 13, lblPad = sideDock ? 2 : compactDock ? 2 : 8;
+        final float cs = portrait ? 56 : sideDock ? (dockLabels ? 40 : 48) : compactDock ? 50 : 64;          // círculo
+        final float lblSize = portrait ? 11 : sideDock ? 10 : compactDock ? 12 : 13, lblPad = portrait ? 6 : sideDock ? 2 : compactDock ? 2 : 8;
+        final float pStep = (cw - 32) / 7f;   // vertical: 7 botones en una fila a todo el ancho
         final float railX = railLeft ? 16 : 1016 + ex, step = (boardH - 24) / 7f;
         if (sideDock) {
             View rail = new View(this);
@@ -1942,7 +2034,8 @@ public class Main extends Activity {
             } else {
                 b.setGravity(Gravity.CENTER);   // sin nombres: el círculo queda centrado en la franja
             }
-            if (sideDock) { b.setGravity(Gravity.CENTER); place(board, b, railX, 12 + step * i, RAIL, step); }
+            if (portrait) { b.setGravity(Gravity.CENTER); place(board, b, 16 + pStep * i, dockTop + 6, pStep, boardH - dockTop - 12); }
+            else if (sideDock) { b.setGravity(Gravity.CENTER); place(board, b, railX, 12 + step * i, RAIL, step); }
             else if (compactDock) { b.setGravity(Gravity.CENTER); place(board, b, 38 + (138 + ex / 6) * i, dockTop + 4, 120, 600 - dockTop - 8); }
             else place(board, b, 38 + (138 + ex / 6) * i, dockLabels ? 474 : 462, 120, dockLabels ? 110 : 132);
             b.setOnClickListener(new View.OnClickListener() {
@@ -3548,6 +3641,12 @@ public class Main extends Activity {
         }
         // Diseño del inicio (Bloque 2: comentarios de Reddit — Druids07, chiripiscuis, bouff1053, iitsFxcuu)
         LinearLayout lay = section(body, "Diseño del inicio");
+        final String[] orients = {"auto", "landscape", "portrait"};
+        segmented(lay, "Orientación", "Vertical: para pantallas altas estilo Tesla (reproductor arriba, botones abajo)",
+            new String[]{"Auto", "Horizontal", "Vertical"},
+            Math.max(0, java.util.Arrays.asList(orients).indexOf(prefs.getString("orient_mode", "auto"))), new IntCb() { public void on(int i) {
+                prefs.edit().putString("orient_mode", orients[i]).apply(); rebuild(); showSettings(2);
+            }});
         segmented(lay, "Reproductor de música", "Ponlo del lado del conductor para tenerlo a la mano", new String[]{"Derecha", "Izquierda"},
             playerLeft ? 1 : 0, new IntCb() { public void on(int i) {
                 prefs.edit().putString("player_side", i == 1 ? "left" : "right").apply(); rebuild();
@@ -4027,7 +4126,7 @@ public class Main extends Activity {
         row(out, "Desinstalar StradaOS", "Android pide confirmar", null, new Runnable() { public void run() { uninstallSelf(); } });
         if (getPackageName().endsWith(".debug")) {
             LinearLayout sm = section(body, "Versión de prueba");
-            segmented(sm, "Simular pantalla", "Para probar otros tamaños en una tablet o celular", new String[]{"Real", "1024×600", "1280×720", "1920×720", "2000×1200", "1280×480"},
+            segmented(sm, "Simular pantalla", "Para probar otros tamaños en una tablet o celular", new String[]{"Real", "1024×600", "1280×720", "1920×720", "2000×1200", "1280×480", "768×1024"},
                 prefs.getInt("sim_screen", 0), new IntCb() { public void on(int i) {
                     prefs.edit().putInt("sim_screen", i).apply(); rebuild(); showSettings(7);
                 }});

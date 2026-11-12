@@ -645,3 +645,7 @@ Tema según el modo oscuro del sistema	سمة تتبع الوضع الداكن �
 Pantallas que lo cambian (p. ej. con las luces)	الشاشات التي تغيّره (مثلًا مع الأضواء)
 el sistema está en modo oscuro	النظام في الوضع الداكن
 el sistema está en modo claro	النظام في الوضع الفاتح
+Orientación	الاتجاه
+Vertical: para pantallas altas estilo Tesla (reproductor arriba, botones abajo)	رأسي: للشاشات الطولية زي تسلا (المشغّل فوق والأزرار تحت)
+Horizontal	أفقي
+Vertical	رأسي

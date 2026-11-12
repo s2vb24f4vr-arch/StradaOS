@@ -645,3 +645,7 @@ Tema según el modo oscuro del sistema	Theme that follows the system dark mode
 Pantallas que lo cambian (p. ej. con las luces)	Screens that switch it (e.g. with the headlights)
 el sistema está en modo oscuro	the system is in dark mode
 el sistema está en modo claro	the system is in light mode
+Orientación	Orientation
+Vertical: para pantallas altas estilo Tesla (reproductor arriba, botones abajo)	Vertical: for tall Tesla-style screens (player on top, buttons at the bottom)
+Horizontal	Landscape
+Vertical	Portrait
