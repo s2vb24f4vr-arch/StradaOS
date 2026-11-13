@@ -2478,7 +2478,7 @@ public class Main extends Activity {
         public void onLocationChanged(Location l) {
             lastFix = SystemClock.elapsedRealtime();
             lastFixAny = lastFix;
-            setGps(true, l.hasSpeed() ? l.getSpeed() * 3.6f : 0);
+            setGps(true, gpsFilter(l));
             feedMap(l);
         }
         public void onStatusChanged(String p, int st, Bundle e) { }
@@ -2507,6 +2507,26 @@ public class Main extends Activity {
     private void stopGps() {
         try { lm.removeUpdates(gpsListener); } catch (Exception ignored) { }
         try { lm.removeUpdates(netListener); } catch (Exception ignored) { }
+    }
+
+    private boolean gpsMoving;
+    private int gpsMoveHits;
+
+    /**
+     * Velocidad del GPS sin el «baile» con el auto detenido (la posición deriva unos metros y el GPS informa
+     * 3–10 km/h). Detenido: hace falta superar 8 km/h dos lecturas seguidas para arrancar. En marcha: por debajo de
+     * 4 km/h vuelve a 0. Con mala precisión (> 25 m) no arranca.
+     */
+    private float gpsFilter(Location l) {
+        float kmh = l.hasSpeed() ? l.getSpeed() * 3.6f : 0;
+        boolean poor = l.hasAccuracy() && l.getAccuracy() > 25;
+        if (gpsMoving) {
+            if (kmh < 4) { gpsMoving = false; gpsMoveHits = 0; }
+        } else {
+            gpsMoveHits = (kmh > 8 && !poor) ? gpsMoveHits + 1 : 0;
+            if (gpsMoveHits >= 2) gpsMoving = true;
+        }
+        return gpsMoving ? kmh : 0;
     }
 
     private void setGps(boolean ok, float kmh) {
